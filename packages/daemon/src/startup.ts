@@ -1217,7 +1217,8 @@ export async function createDaemon(opts?: DaemonOptions): Promise<DaemonResult> 
       if (fs.existsSync(builtinSpecsRoot)) {
         roots.unshift({ path: builtinSpecsRoot, sourceType: "builtin" });
       }
-      const lib = new SpecLibraryService({ roots, specReviewService });
+      const hiddenBuiltinRigs = (process.env["OPENRIG_LIBRARY_HIDDEN_RIGS"] ?? "").split(",").map((n) => n.trim()).filter(Boolean);
+      const lib = new SpecLibraryService({ roots, specReviewService, hiddenBuiltinRigs });
       lib.scan();
       return lib;
     })(),

@@ -32,6 +32,8 @@ export interface SpecLibraryEntry {
 export interface SpecLibraryOpts {
   roots: Array<{ path: string; sourceType: "builtin" | "user_file" }>;
   specReviewService: SpecReviewService;
+  /** Built-in rig names left out of the library; their files stay on disk. */
+  hiddenBuiltinRigs?: string[];
 }
 
 export type SpecLibraryMutationResult =
@@ -115,10 +117,12 @@ export class SpecLibraryService {
   private workflowEntries = new Map<string, SpecLibraryEntry>();
   private readonly roots: SpecLibraryOpts["roots"];
   private readonly specReviewService: SpecReviewService;
+  private readonly hiddenBuiltinRigs: Set<string>;
 
   constructor(opts: SpecLibraryOpts) {
     this.roots = opts.roots;
     this.specReviewService = opts.specReviewService;
+    this.hiddenBuiltinRigs = new Set(opts.hiddenBuiltinRigs ?? []);
   }
 
   scan(): void {
@@ -151,7 +155,7 @@ export class SpecLibraryService {
         }
 
         const entry = this.classifySpec(yaml, root.sourceType, absPath, relPath, stat.mtimeMs);
-        if (entry) {
+        if (entry && !(entry.sourceType === "builtin" && entry.kind === "rig" && this.hiddenBuiltinRigs.has(entry.name))) {
           newEntries.set(entry.id, entry);
         }
       }

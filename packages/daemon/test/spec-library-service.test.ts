@@ -153,6 +153,27 @@ describe("SpecLibraryService", () => {
     expect(lib.list({ kind: "agent" })[0]!.id).toBe(entries[0]!.id);
   });
 
+  it("hiddenBuiltinRigs drops only built-in rigs with those names", () => {
+    const builtinDir = join(tmpDir, "builtin");
+    const userDir = join(tmpDir, "user");
+    for (const name of ["test-rig", "kept-rig"]) {
+      mkdirSync(join(builtinDir, "rigs", "launch", name), { recursive: true });
+      writeFileSync(join(builtinDir, "rigs", "launch", name, "rig.yaml"), VALID_RIG_YAML.replace("test-rig", name));
+    }
+    mkdirSync(userDir);
+    writeFileSync(join(userDir, "mine.yaml"), VALID_RIG_YAML);
+
+    const lib = new SpecLibraryService({
+      roots: [{ path: builtinDir, sourceType: "builtin" }, { path: userDir, sourceType: "user_file" }],
+      specReviewService,
+      hiddenBuiltinRigs: ["test-rig"],
+    });
+    lib.scan();
+
+    const rigs = lib.list({ kind: "rig" }).map((e) => `${e.sourceType}:${e.name}`).sort();
+    expect(rigs).toEqual(["builtin:kept-rig", "user_file:test-rig"]);
+  });
+
   it("builtin scan ignores nested template yaml that is not a rig or agent entrypoint", () => {
     mkdirSync(join(tmpDir, "rigs", "launch", "demo"), { recursive: true });
     mkdirSync(join(tmpDir, "agents", "shared", "skills", "process", "containerized-e2e", "templates"), { recursive: true });
