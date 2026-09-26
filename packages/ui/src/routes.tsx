@@ -389,6 +389,9 @@ const liveNodeDetailsRoute = createRoute({
 const importRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/import",
+  validateSearch: (search: Record<string, unknown>): { rigRoot?: string } => ({
+    rigRoot: typeof search.rigRoot === "string" ? search.rigRoot : undefined,
+  }),
   component: ImportFlow,
 });
 

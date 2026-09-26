@@ -87,6 +87,7 @@ function LibrarySection({
   isLoading,
   emptyLabel,
   badge,
+  action,
 }: {
   id: string;
   title: string;
@@ -96,17 +97,30 @@ function LibrarySection({
   /** Optional aggregate badge shown in the header right slot in place of the
    *  default item count (e.g. agent-images "3 images · 128 MB"). */
   badge?: string;
+  /** Optional link in the header's right slot, before the count. */
+  action?: { label: string; to: string; testId: string };
 }) {
   return (
     <section data-testid={`library-section-${id}`} className="border border-outline-variant bg-surface-lowest/25 hard-shadow">
       <header className="flex items-baseline justify-between border-b border-outline-variant bg-surface-lowest/30 px-3 py-2">
         <SectionHeader tone="default">{title}</SectionHeader>
-        <span
-          data-testid={`library-section-${id}-badge`}
-          className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] text-on-surface-variant"
-        >
-          {isLoading ? "loading" : badge ?? `${rows.length} items`}
-        </span>
+        <div className="flex shrink-0 items-baseline gap-3">
+          {action && (
+            <Link
+              to={action.to}
+              data-testid={action.testId}
+              className="border border-outline-variant px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-on-surface hover:bg-surface-low/50"
+            >
+              {action.label}
+            </Link>
+          )}
+          <span
+            data-testid={`library-section-${id}-badge`}
+            className="font-mono text-[9px] uppercase tracking-[0.12em] text-on-surface-variant"
+          >
+            {isLoading ? "loading" : badge ?? `${rows.length} items`}
+          </span>
+        </div>
       </header>
       {rows.length > 0 ? (
         <ul className="divide-y divide-outline-variant">
@@ -353,6 +367,7 @@ export function SpecsLibraryPage() {
           id="rig-specs"
           title="Rig Specs"
           rows={sections.rigSpecs}
+          action={{ label: "Import", to: "/import", testId: "library-section-rig-specs-import" }}
           isLoading={specsLoading}
           emptyLabel="No rig specs found."
         />

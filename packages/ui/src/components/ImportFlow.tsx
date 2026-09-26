@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearch } from "@tanstack/react-router";
 import { useImportRig, ImportError } from "../hooks/mutations.js";
 import { getInstantiateStatusColorClass } from "@/lib/instantiate-status-colors";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,8 @@ export function ImportFlow({ onBack }: ImportFlowProps = {}) {
     clearSelectedRigDraft,
   } = useSpecsWorkspace();
   const [yaml, setYaml] = useState(() => selectedRigDraft?.yaml ?? currentRigDraft?.yaml ?? "");
-  const [rigRoot, setRigRoot] = useState("");
+  const { rigRoot: rigRootParam } = useSearch({ strict: false }) as { rigRoot?: string };
+  const [rigRoot, setRigRoot] = useState(rigRootParam ?? "");
   const [step, setStep] = useState<Step>("input");
   const [errorAtStep, setErrorAtStep] = useState<number>(0);
   const [errors, setErrors] = useState<string[]>([]);

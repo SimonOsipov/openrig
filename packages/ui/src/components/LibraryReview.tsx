@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { WorkspacePage } from "./WorkspacePage.js";
+import { useSpecsWorkspace } from "./SpecsWorkspace.js";
 // OPR.0.4.6.WF4 (C3b) — the workflow shape renderer now lives in its own module
 // (extracted from this file); this page imports it. SliceWorkflowGraph untouched.
 import { WorkflowTopologyGraph } from "./workflow/WorkflowTopologyGraph.js";
@@ -96,6 +97,7 @@ function LibraryAgentReviewPage({ review }: { review: LibraryAgentReview }) {
 
 function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
   const navigate = useNavigate();
+  const { rememberRigDraft } = useSpecsWorkspace();
   const [setupPromptCopied, setSetupPromptCopied] = useState(false);
   const { data: agentEntries = [] } = useSpecLibrary("agent");
   const agentEntryByName = new Map(agentEntries.map((entry) => [entry.name, entry]));
@@ -149,7 +151,18 @@ function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
                   {setupPromptCopied ? "Copied" : "Copy Setup Prompt"}
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => navigate({ to: "/import" })}>Import</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="library-rig-deploy"
+                onClick={() => {
+                  // Pre-fill this spec; its local: agent refs resolve against the spec's folder.
+                  rememberRigDraft(review.raw, review.name);
+                  navigate({ to: "/import", search: { rigRoot: review.sourcePath.replace(/\/[^/]+$/, "") } });
+                }}
+              >
+                Deploy
+              </Button>
             </div>
           }
         />
