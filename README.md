@@ -154,7 +154,7 @@ rig up conveyor
 
 `conveyor` is a four-seat starter mixing Claude Code and Codex. It shows a handoff path through intake, planning, build, and review; `first-project` remains the smaller two-seat starting point.
 
-Also ships: `implementation-pair`, `adversarial-review`, `research-team`, and `secrets-manager` (HashiCorp Vault managed by a specialist agent).
+Also ships: `implementation-pair`, `research-team`, and `secrets-manager` (HashiCorp Vault managed by a specialist agent).
 
 Browse the library:
 

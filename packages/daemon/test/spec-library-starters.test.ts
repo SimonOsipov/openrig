@@ -12,7 +12,6 @@ const SPECS_ROOT = resolve(import.meta.dirname, "../specs");
 const RIG_SPECS = [
   "rigs/launch/conveyor/rig.yaml",
   "rigs/launch/implementation-pair/rig.yaml",
-  "rigs/focused/adversarial-review/rig.yaml",
   "rigs/focused/research-team/rig.yaml",
   "rigs/preview/product-team/rig.yaml",
   "rigs/launch/secrets-manager/rig.yaml",
@@ -197,7 +196,6 @@ describe("Starter specs", () => {
     const names = rigs.map((e) => e.name);
     expect(names).toContain("conveyor");
     expect(names).toContain("implementation-pair");
-    expect(names).toContain("adversarial-review");
     expect(names).toContain("research-team");
     expect(names).toContain("product-team");
     expect(names).toContain("secrets-manager");
