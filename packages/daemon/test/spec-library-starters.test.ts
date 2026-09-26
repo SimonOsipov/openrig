@@ -14,7 +14,6 @@ const RIG_SPECS = [
   "rigs/launch/implementation-pair/rig.yaml",
   "rigs/focused/adversarial-review/rig.yaml",
   "rigs/focused/research-team/rig.yaml",
-  "rigs/launch/demo/rig.yaml",
   "rigs/preview/product-team/rig.yaml",
   "rigs/launch/secrets-manager/rig.yaml",
 ];
@@ -200,7 +199,6 @@ describe("Starter specs", () => {
     expect(names).toContain("implementation-pair");
     expect(names).toContain("adversarial-review");
     expect(names).toContain("research-team");
-    expect(names).toContain("demo");
     expect(names).toContain("product-team");
     expect(names).toContain("secrets-manager");
   });
@@ -214,12 +212,12 @@ describe("Starter specs", () => {
 
     const rigs = lib.list({ kind: "rig" });
     const secretsManager = rigs.find((entry) => entry.name === "secrets-manager");
-    const demo = rigs.find((entry) => entry.name === "demo");
+    const pair = rigs.find((entry) => entry.name === "implementation-pair");
 
     expect(secretsManager).toBeDefined();
     expect(secretsManager!.hasServices).toBe(true);
-    expect(demo).toBeDefined();
-    expect(demo!.hasServices).toBeFalsy();
+    expect(pair).toBeDefined();
+    expect(pair!.hasServices).toBeFalsy();
   });
 
   it("secrets-manager rig uses canonical vault.specialist topology", () => {
@@ -252,7 +250,6 @@ describe("Starter specs", () => {
     const rigs = lib.list({ kind: "rig" });
     const conveyor = rigs.find((entry) => entry.name === "conveyor");
     const implementationPair = rigs.find((entry) => entry.name === "implementation-pair");
-    const demo = rigs.find((entry) => entry.name === "demo");
     const productTeam = rigs.find((entry) => entry.name === "product-team");
 
     expect(conveyor?.summary?.toLowerCase()).toContain("station pipeline");
@@ -260,8 +257,6 @@ describe("Starter specs", () => {
     expect(implementationPair?.summary?.toLowerCase()).toMatch(/implementation and qa capabilities/);
     expect(implementationPair?.summary?.toLowerCase()).toMatch(/components choose the work/);
     expect(implementationPair?.summary?.toLowerCase()).toMatch(/no composition means light part a/);
-    expect(demo?.summary?.toLowerCase()).toContain("launch-grade");
-    expect(demo?.summary?.toLowerCase()).not.toContain("advanced preview");
     expect(productTeam?.summary?.toLowerCase()).toContain("advanced product-development starter");
     expect(productTeam?.summary?.toLowerCase()).not.toContain("demo");
     expect(productTeam?.summary?.toLowerCase()).not.toContain("advanced preview");
@@ -779,17 +774,13 @@ describe("Starter specs", () => {
     expect(roleContent.toLowerCase()).toContain("principles");
   });
 
-  it("demo and orchestration enter selected work without waiting for unneeded seats", () => {
-    const demoCulture = readFileSync(join(SPECS_ROOT, "rigs/launch/demo/CULTURE.md"), "utf-8").replace(/\s+/g, " ");
+  it("orchestration enters selected work without waiting for unneeded seats", () => {
     const orchestrationSkill = readFileSync(
       join(SPECS_ROOT, "agents/shared/skills/pods/orchestration-team/SKILL.md"),
       "utf-8",
     ).replace(/\s+/g, " ");
 
-    for (const content of [demoCulture, orchestrationSkill]) expectSelectedWorkEntry(content);
-    expect(demoCulture).toMatch(/Only the selected work's required capabilities need to be ready/);
-    expect(demoCulture).toMatch(/independent review fires once over the accumulated wave/);
-    expect(demoCulture).toMatch(/named rigorous slice retains its selected checks/);
+    expectSelectedWorkEntry(orchestrationSkill);
     expect(orchestrationSkill).toMatch(/Do not wait for an entire starter topology or assign extra reviews/);
     expect(orchestrationSkill).toMatch(/Independent review fires once at the authored wave boundary/);
     expect(orchestrationSkill).toMatch(/Preserve separately named rigorous-slice exceptions/);
