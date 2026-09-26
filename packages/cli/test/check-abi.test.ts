@@ -10,14 +10,6 @@ describe("postinstall ABI check", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("passes on Node 20 LTS", () => {
-    const result = checkAbi({
-      nodeVersion: "v20.18.0",
-      loadNativeAddon: () => {},
-    });
-    expect(result.ok).toBe(true);
-  });
-
   it("passes on Node 24 LTS", () => {
     const result = checkAbi({
       nodeVersion: "v24.0.0",
@@ -26,33 +18,13 @@ describe("postinstall ABI check", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("fails on odd-numbered Node 25 with honest error + fix command", () => {
+  it("fails on Node below 22 with version-too-low error", () => {
     const result = checkAbi({
-      nodeVersion: "v25.8.0",
+      nodeVersion: "v20.18.0",
       loadNativeAddon: () => {},
     });
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("odd-numbered");
-    expect(result.message).toContain("v25.8.0");
-    expect(result.message).toContain("nvm install 22");
-  });
-
-  it("fails on odd-numbered Node 23 with honest error", () => {
-    const result = checkAbi({
-      nodeVersion: "v23.5.0",
-      loadNativeAddon: () => {},
-    });
-    expect(result.ok).toBe(false);
-    expect(result.message).toContain("odd-numbered");
-  });
-
-  it("fails on Node below 20 with version-too-low error", () => {
-    const result = checkAbi({
-      nodeVersion: "v18.20.0",
-      loadNativeAddon: () => {},
-    });
-    expect(result.ok).toBe(false);
-    expect(result.message).toContain("requires Node.js 20, 22, or 24");
+    expect(result.message).toContain("requires Node.js 22 or newer");
     expect(result.message).toContain("nvm install 22");
   });
 
@@ -103,14 +75,12 @@ describe("postinstall ABI check", () => {
     expect(result.message).toContain("EACCES");
   });
 
-  it("skips native addon check entirely for odd versions (fast path)", () => {
-    let addonCalled = false;
-    const result = checkAbi({
-      nodeVersion: "v25.8.0",
-      loadNativeAddon: () => { addonCalled = true; },
-    });
-    expect(result.ok).toBe(false);
-    // Version check short-circuits before trying to load the addon
-    expect(addonCalled).toBe(false);
+  it("passes on odd-numbered Node 25 and 26+ when the addon loads", () => {
+    for (const nodeVersion of ["v25.8.0", "v26.10.0"]) {
+      let addonCalled = false;
+      const result = checkAbi({ nodeVersion, loadNativeAddon: () => { addonCalled = true; } });
+      expect(result.ok).toBe(true);
+      expect(addonCalled).toBe(true);
+    }
   });
 });

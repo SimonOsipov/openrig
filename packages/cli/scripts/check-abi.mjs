@@ -12,38 +12,19 @@
  */
 export function checkAbi({ nodeVersion, loadNativeAddon }) {
   // Phase 1: version-range check (fast path).
-  // Even-numbered Node majors (20, 22, 24) are LTS lines with native addon
-  // prebuilds. Odd-numbered majors (21, 23, 25) generally lack them.
+  // better-sqlite3 13 needs Node >= 22; any major builds from source, so the
+  // Phase 2 load check is the real gate.
   const match = nodeVersion.match(/^v?(\d+)/);
   const major = match ? parseInt(match[1], 10) : 0;
 
-  if (major < 20) {
+  if (major < 22) {
     return {
       ok: false,
       message: [
         "",
         "  ╔══════════════════════════════════════════════════════════════╗",
-        `  ║  @openrig/cli requires Node.js 20, 22, or 24 (LTS).       ║`,
+        `  ║  @openrig/cli requires Node.js 22 or newer.               ║`,
         `  ║  Current: ${nodeVersion.padEnd(49)}║`,
-        "  ║                                                            ║",
-        "  ║  Fix:  nvm install 22 && npm install -g @openrig/cli       ║",
-        "  ╚══════════════════════════════════════════════════════════════╝",
-        "",
-      ].join("\n"),
-    };
-  }
-
-  if (major % 2 !== 0) {
-    return {
-      ok: false,
-      message: [
-        "",
-        "  ╔══════════════════════════════════════════════════════════════╗",
-        `  ║  @openrig/cli does not support odd-numbered Node releases.  ║`,
-        `  ║  Current: ${nodeVersion.padEnd(49)}║`,
-        "  ║                                                            ║",
-        "  ║  Odd Node versions (21, 23, 25, …) lack native addon       ║",
-        "  ║  prebuilds for better-sqlite3. The daemon will fail.       ║",
         "  ║                                                            ║",
         "  ║  Fix:  nvm install 22 && npm install -g @openrig/cli       ║",
         "  ╚══════════════════════════════════════════════════════════════╝",

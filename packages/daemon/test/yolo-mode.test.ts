@@ -151,3 +151,12 @@ describe("OPR.0.4.8.2 YOLO mode — opt-in, default OFF, launch-flag surface onl
     expect(piTrust("no-approve", { OPENRIG_YOLO: "1" } as NodeJS.ProcessEnv)).toBe("approve");
   });
 });
+
+describe("OPENRIG_CLAUDE_PERMISSION_MODE", () => {
+  it("sets the Claude floor mode; YOLO still wins", async () => {
+    const { claudePostureFlag } = await import("../src/adapters/yolo-mode.js");
+    expect(claudePostureFlag({} as NodeJS.ProcessEnv)).toBe("--permission-mode acceptEdits");
+    expect(claudePostureFlag({ OPENRIG_CLAUDE_PERMISSION_MODE: "auto" } as NodeJS.ProcessEnv)).toBe("--permission-mode auto");
+    expect(claudePostureFlag({ OPENRIG_CLAUDE_PERMISSION_MODE: "auto", OPENRIG_YOLO: "1" } as NodeJS.ProcessEnv)).toBe("--dangerously-skip-permissions");
+  });
+});
