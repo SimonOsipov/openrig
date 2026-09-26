@@ -36,17 +36,17 @@ const inlineSizeClass = {
 };
 
 const toneClass: Record<RuntimeBrandId, string> = {
-  "claude-code": "border-[#9f5f4e]/40 bg-[#b06a57]/[0.12] text-[#62392f]",
+  "claude-code": "border-[#9f5f4e]/40 bg-[#b06a57]/[0.12] text-[#62392f] dark:text-[#e0a896]",
   codex: "border-outline/50 bg-surface-lowest/75 text-on-surface",
-  pi: "border-[#4c5b9e]/45 bg-[#5b6bb5]/[0.10] text-[#33406e]",
+  pi: "border-[#4c5b9e]/45 bg-[#5b6bb5]/[0.10] text-[#33406e] dark:text-[#b3bdf0]",
   terminal: "border-outline/45 bg-inverse-surface/[0.08] text-on-surface",
   unknown: "border-outline-variant bg-surface-lowest/55 text-on-surface-variant",
 };
 
 const inlineToneClass: Record<RuntimeBrandId, string> = {
-  "claude-code": "text-[#62392f]",
+  "claude-code": "text-[#62392f] dark:text-[#e0a896]",
   codex: "text-on-surface",
-  pi: "text-[#33406e]",
+  pi: "text-[#33406e] dark:text-[#b3bdf0]",
   terminal: "text-on-surface",
   unknown: "text-on-surface-variant",
 };
