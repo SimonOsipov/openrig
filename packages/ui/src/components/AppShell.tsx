@@ -50,7 +50,6 @@ import {
   TopologyOverlayProvider,
   useTopologyOverlay,
 } from "./topology/topology-overlay-context.js";
-import { ThemeSelector } from "./ThemeSelector.js";
 import { useSettings } from "../hooks/useSettings.js";
 import { useActivityFeed } from "../hooks/useActivityFeed.js";
 import { useClearPlacementOnHostSwitch } from "../hooks/useHosts.js";
@@ -560,8 +559,6 @@ function AppShellInner({ children }: AppShellProps) {
                 className="hidden sm:flex items-center gap-3"
               >
                 <HostIndicator />
-                {/* OPR.0.4.3.29 — theme selector (placement founder-taste-gated). */}
-                <ThemeSelector />
               </div>
             </header>
 

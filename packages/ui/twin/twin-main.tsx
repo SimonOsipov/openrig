@@ -25,25 +25,16 @@ import { queryClient } from "../src/lib/query-client.js";
 import { routeTree } from "../src/routes.js";
 import { seedTwinCache } from "./seed.js";
 import { ThemeProvider } from "../src/components/ThemeProvider.js";
-import { THEME_STORAGE_KEY } from "../src/lib/theme.js";
+import type { ThemeId } from "../src/lib/theme.js";
 
 // The surface this intent.html lands on, injected at build time from the TWIN_ROUTE env
 // (vite `define`); per-slice authoring sets it to the surface under proposal. Default "/".
 declare const __TWIN_ROUTE__: string;
 const TWIN_ROUTE = __TWIN_ROUTE__;
 
-// 0.4.3.29 theming in the twin — the REAL ThemeProvider mounts below (same as
-// production main.tsx). `TWIN_THEME=dark|light|system npm run twin:build` seeds
-// the persisted choice pre-mount so a capture defaults to a palette; empty = the
-// provider's normal resolution (the operator toggles via the real ThemeSelector).
+// `TWIN_THEME=dark|light|system npm run twin:build` forces a palette for captures;
+// empty = follow the OS, same as production.
 declare const __TWIN_THEME__: string;
-if (__TWIN_THEME__) {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, __TWIN_THEME__);
-  } catch {
-    /* localStorage unavailable (some file:// contexts) — provider falls back */
-  }
-}
 
 // Seeded data is authoritative: never stale, never refetch, never retry (daemon-free).
 queryClient.setDefaultOptions({
@@ -72,7 +63,7 @@ const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <ThemeProvider>
+      <ThemeProvider initialTheme={(__TWIN_THEME__ || undefined) as ThemeId | undefined}>
         <RouterProvider router={twinRouter} />
       </ThemeProvider>
     </StrictMode>,

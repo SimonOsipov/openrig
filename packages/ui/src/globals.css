@@ -601,6 +601,8 @@
    ========================================================================== */
 
 .dark {
+  /* Native controls (inputs, textareas, selects, scrollbars) render dark too. */
+  color-scheme: dark;
   /* Paper surfaces → warm charcoal. FLAT / RECESSED (do NOT ramp lighter per
      nesting): base cards sit a hair above the ground; MORE-nested surfaces go
      DARKER (toward black). Range compressed to 7.5–9.5% L; depth = borders +
