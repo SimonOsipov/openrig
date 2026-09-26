@@ -48,6 +48,7 @@ import { AgentSpecDisplay } from "./AgentSpecDisplay.js";
 import { RigSpecDisplay } from "./RigSpecDisplay.js";
 import { buildSetupPrompt } from "../lib/build-setup-prompt.js";
 import { copyText } from "../lib/copy-text.js";
+import { useRemoveLibrarySpec } from "../hooks/mutations.js";
 
 interface LibraryReviewProps {
   entryId: string;
@@ -100,6 +101,10 @@ function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
   const { rememberRigDraft } = useSpecsWorkspace();
   const [setupPromptCopied, setSetupPromptCopied] = useState(false);
   const { data: agentEntries = [] } = useSpecLibrary("agent");
+  const { data: rigEntries = [] } = useSpecLibrary("rig");
+  const isUserSpec = rigEntries.find((e) => e.id === review.libraryEntryId)?.sourceType === "user_file";
+  const removeSpec = useRemoveLibrarySpec();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const agentEntryByName = new Map(agentEntries.map((entry) => [entry.name, entry]));
   const reviewPods = review.pods ?? [];
   const reviewNodes = review.nodes ?? [];
@@ -163,10 +168,31 @@ function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
               >
                 Deploy
               </Button>
+              {isUserSpec && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="library-rig-delete"
+                  disabled={removeSpec.isPending}
+                  onClick={() => {
+                    // Two clicks instead of window.confirm, which blocks browser automation.
+                    if (!confirmDelete) { setConfirmDelete(true); return; }
+                    removeSpec.mutate(review.libraryEntryId, { onSuccess: () => void navigate({ to: "/specs" }) });
+                  }}
+                  onBlur={() => setConfirmDelete(false)}
+                >
+                  {confirmDelete ? "Confirm delete" : "Delete"}
+                </Button>
+              )}
             </div>
           }
         />
         <ProvenanceBadge sourcePath={review.sourcePath} sourceState={review.sourceState} />
+        {removeSpec.error && (
+          <div className="font-mono text-[11px] text-destructive" data-testid="library-rig-delete-error">
+            {removeSpec.error.message}
+          </div>
+        )}
 
         <WorkflowSummaryGrid>
           <WorkflowSummaryCard label="Format" value={review.format === "pod_aware" ? "Pod-Aware" : "Legacy"} testId="lib-rig-format" />

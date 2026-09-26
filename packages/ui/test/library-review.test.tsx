@@ -497,4 +497,53 @@ describe("LibraryReview", () => {
     expect(screen.queryByTestId("context-pack-send-modal")).toBeNull();
     expect(fetchMock.mock.calls.map(([input]) => String(input))).not.toContain("/api/mission-control/destinations");
   });
+
+  it("user rig: Delete takes two clicks, calls DELETE and returns to the Library; built-in has no Delete", async () => {
+    const rigReview = (id: string) => ({
+      sourceState: "library_item", kind: "rig", name: id, version: "0.2", format: "pod_aware",
+      pods: [], edges: [], graph: { nodes: [], edges: [] }, raw: `name: ${id}\n`,
+      libraryEntryId: id, sourcePath: `/specs/${id}/rig.yaml`,
+    });
+    const entries = [
+      { id: "mine", kind: "rig", name: "mine", sourceType: "user_file" },
+      { id: "stock", kind: "rig", name: "stock", sourceType: "builtin" },
+    ];
+    const deletes: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (init?.method === "DELETE") {
+        deletes.push(url);
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      const review = url.match(/^\/api\/specs\/library\/(\w+)\/review$/);
+      if (review) return new Response(JSON.stringify(rigReview(review[1]!)), { status: 200 });
+      if (url.includes("/api/specs/library")) return new Response(JSON.stringify(entries), { status: 200 });
+      throw new Error(`Unexpected fetch: ${url}`);
+    }));
+
+    render(createAppTestRouter({
+      initialPath: "/specs/library/stock",
+      routes: [
+        { path: "/specs/library/stock", component: () => <LibraryReview entryId="stock" /> },
+      ],
+    }));
+    await waitFor(() => expect(screen.getByTestId("library-review-rig")).toBeDefined());
+    expect(screen.queryByTestId("library-rig-delete")).toBeNull();
+    cleanup();
+
+    render(createAppTestRouter({
+      initialPath: "/specs/library/mine",
+      routes: [
+        { path: "/specs/library/mine", component: () => <LibraryReview entryId="mine" /> },
+        { path: "/specs", component: () => <div data-testid="library-home" /> },
+      ],
+    }));
+    const button = await screen.findByTestId("library-rig-delete");
+    fireEvent.click(button);
+    expect(button.textContent).toBe("Confirm delete");
+    expect(deletes).toEqual([]);
+    fireEvent.click(button);
+    await waitFor(() => expect(screen.getByTestId("library-home")).toBeDefined());
+    expect(deletes).toEqual(["/api/specs/library/mine"]);
+  });
 });
