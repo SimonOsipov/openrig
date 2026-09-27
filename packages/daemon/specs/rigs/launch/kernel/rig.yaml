@@ -9,8 +9,8 @@ summary: >
   re-creating the rig. Member tmux sessions survive daemon-restart-only;
   a HOST reboot drops tmux and the reconciler marks sessions detached,
   at which point the operator pod owns the agent-restart workflow
-  through the current operator workflow. Dual-runtime variant; Claude Code +
-  Codex both authenticated.
+  through the current operator workflow. Picked when Claude Code and
+  Codex are both authenticated; all three agents run on Claude Code.
 
 culture_file: culture/CULTURE.md
 
@@ -42,7 +42,7 @@ pods:
               idempotent: true
       - id: agent
         agent_ref: "local:agents/operator/agent"
-        runtime: codex
+        runtime: claude-code
         profile: default
         cwd: "."
     edges:
@@ -58,7 +58,7 @@ pods:
     members:
       - id: worker
         agent_ref: "local:agents/queue/worker"
-        runtime: codex
+        runtime: claude-code
         profile: default
         cwd: "."
 
