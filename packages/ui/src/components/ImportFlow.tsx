@@ -75,8 +75,9 @@ export function ImportFlow({ onBack }: ImportFlowProps = {}) {
     clearSelectedRigDraft,
   } = useSpecsWorkspace();
   const [yaml, setYaml] = useState(() => selectedRigDraft?.yaml ?? currentRigDraft?.yaml ?? "");
-  const { rigRoot: rigRootParam } = useSearch({ strict: false }) as { rigRoot?: string };
+  const { rigRoot: rigRootParam, cwd: cwdParam } = useSearch({ strict: false }) as { rigRoot?: string; cwd?: string };
   const [rigRoot, setRigRoot] = useState(rigRootParam ?? "");
+  const [cwd, setCwd] = useState(cwdParam ?? "");
   const [step, setStep] = useState<Step>("input");
   const [errorAtStep, setErrorAtStep] = useState<number>(0);
   const [errors, setErrors] = useState<string[]>([]);
@@ -125,6 +126,7 @@ export function ImportFlow({ onBack }: ImportFlowProps = {}) {
     try {
       const headers: Record<string, string> = { "Content-Type": "text/yaml" };
       if (rigRoot) headers["X-Rig-Root"] = rigRoot;
+      if (cwd.trim()) headers["X-Cwd-Override"] = cwd.trim();
       const res = await fetch("/api/rigs/import/preflight", {
         method: "POST",
         headers,
@@ -151,7 +153,7 @@ export function ImportFlow({ onBack }: ImportFlowProps = {}) {
     setStep("instantiating");
     setErrors([]);
     try {
-      const data = await importRig.mutateAsync({ yaml, rigRoot: rigRoot.trim() || undefined }) as InstantiateResult;
+      const data = await importRig.mutateAsync({ yaml, rigRoot: rigRoot.trim() || undefined, cwd: cwd.trim() || undefined }) as InstantiateResult;
       setResult(data);
       setStep("done");
     } catch (err) {
@@ -205,6 +207,17 @@ export function ImportFlow({ onBack }: ImportFlowProps = {}) {
               value={rigRoot}
               onChange={(e) => setRigRoot(e.target.value)}
               placeholder="/path/to/rig/root"
+              className="font-mono text-body-sm"
+            />
+          </div>
+          <div className="mb-spacing-4">
+            <label className="text-label-sm text-foreground-muted uppercase tracking-[0.04em] block mb-spacing-1">WORKING FOLDER (OPTIONAL)</label>
+            <Input
+              data-testid="cwd-input"
+              type="text"
+              value={cwd}
+              onChange={(e) => setCwd(e.target.value)}
+              placeholder="Every seat starts here; empty = each member's own cwd"
               className="font-mono text-body-sm"
             />
           </div>

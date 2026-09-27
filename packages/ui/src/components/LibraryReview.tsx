@@ -49,6 +49,7 @@ import { RigSpecDisplay } from "./RigSpecDisplay.js";
 import { buildSetupPrompt } from "../lib/build-setup-prompt.js";
 import { copyText } from "../lib/copy-text.js";
 import { useRemoveLibrarySpec } from "../hooks/mutations.js";
+import { useSettings } from "../hooks/useSettings.js";
 
 interface LibraryReviewProps {
   entryId: string;
@@ -104,6 +105,8 @@ function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
   const { data: rigEntries = [] } = useSpecLibrary("rig");
   const isUserSpec = rigEntries.find((e) => e.id === review.libraryEntryId)?.sourceType === "user_file";
   const removeSpec = useRemoveLibrarySpec();
+  const { data: settings } = useSettings();
+  const workspaceRoot = settings?.settings["workspace.root"]?.value;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const agentEntryByName = new Map(agentEntries.map((entry) => [entry.name, entry]));
   const reviewPods = review.pods ?? [];
@@ -162,8 +165,15 @@ function LibraryRigReviewContent({ review }: { review: LibraryRigReview }) {
                 data-testid="library-rig-deploy"
                 onClick={() => {
                   // Pre-fill this spec; its local: agent refs resolve against the spec's folder.
+                  // Seats start in the workspace root: cwd "." would be the spec folder, which preflight refuses.
                   rememberRigDraft(review.raw, review.name);
-                  navigate({ to: "/import", search: { rigRoot: review.sourcePath.replace(/\/[^/]+$/, "") } });
+                  navigate({
+                    to: "/import",
+                    search: {
+                      rigRoot: review.sourcePath.replace(/\/[^/]+$/, ""),
+                      cwd: typeof workspaceRoot === "string" && workspaceRoot ? workspaceRoot : undefined,
+                    },
+                  });
                 }}
               >
                 Deploy

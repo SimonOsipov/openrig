@@ -152,9 +152,10 @@ export function useImportRig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ yaml, rigRoot }: { yaml: string; rigRoot?: string }) => {
+    mutationFn: async ({ yaml, rigRoot, cwd }: { yaml: string; rigRoot?: string; cwd?: string }) => {
       const headers: Record<string, string> = { "Content-Type": "text/yaml" };
       if (rigRoot) headers["X-Rig-Root"] = rigRoot;
+      if (cwd) headers["X-Cwd-Override"] = cwd;
       const res = await fetch("/api/rigs/import", {
         method: "POST",
         headers,

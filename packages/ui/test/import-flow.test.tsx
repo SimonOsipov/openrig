@@ -159,6 +159,30 @@ describe("ImportFlow", () => {
     });
   });
 
+  it("working folder is sent as X-Cwd-Override to preflight and import", async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ valid: true, errors: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ready: true, errors: [], warnings: [] }) })
+      .mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ rigId: "rig-1", specName: "r", specVersion: "0.2", nodes: [] }) });
+    await renderImportFlow();
+
+    fireEvent.change(screen.getByTestId("yaml-input"), { target: { value: VALID_YAML } });
+    fireEvent.change(screen.getByTestId("cwd-input"), { target: { value: " /work/here " } });
+    fireEvent.click(screen.getByTestId("validate-btn"));
+    await waitFor(() => expect(screen.getByTestId("preflight-btn")).toBeDefined());
+    fireEvent.click(screen.getByTestId("preflight-btn"));
+    await waitFor(() => expect(screen.getByTestId("instantiate-btn")).toBeDefined());
+    fireEvent.click(screen.getByTestId("instantiate-btn"));
+    await waitFor(() => expect(screen.getByTestId("import-result")).toBeDefined());
+
+    const cwdHeader = (call: unknown[]) => ((call[1] as RequestInit).headers as Record<string, string>)["X-Cwd-Override"];
+    expect(mockFetch.mock.calls.map((c) => [String(c[0]), cwdHeader(c)])).toEqual([
+      ["/api/rigs/import/validate", undefined],
+      ["/api/rigs/import/preflight", "/work/here"],
+      ["/api/rigs/import", "/work/here"],
+    ]);
+  });
+
   // Test 6: Error with TRY AGAIN resets to input
   it("error state TRY AGAIN resets to input", async () => {
     mockFetch.mockResolvedValue({
